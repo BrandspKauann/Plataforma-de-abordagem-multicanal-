@@ -1,0 +1,602 @@
+{
+  "name": "Plataforma",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "plataforma",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1024,
+        304
+      ],
+      "id": "7089542d-8566-4361-a889-54cbe6bb2f42",
+      "name": "Webhook",
+      "webhookId": "cb259ea4-9a1c-4fbc-9e65-00f0e1ed8dfb"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b957a0a-979c-4e3e-8ef1-83a1f0c32768",
+              "name": "nome da campanha",
+              "value": "={{ $json.body.campaign.name }}",
+              "type": "string"
+            },
+            {
+              "id": "6c663bf9-2656-48fb-b84d-d8ddc51fbfb4",
+              "name": "email",
+              "value": "={{ $json.body.email.enabled }}",
+              "type": "boolean"
+            },
+            {
+              "id": "44ca2e78-9d97-4dcf-98f0-f75d536c95e2",
+              "name": "whatsapp",
+              "value": "={{ $json.body.whatsapp.enabled }}",
+              "type": "boolean"
+            },
+            {
+              "id": "2eb1a12c-0dd0-40b3-a5c3-6f97dd52c774",
+              "name": "nome do usuario",
+              "value": "={{ $json.body.email.data.seuNome }}",
+              "type": "string"
+            },
+            {
+              "id": "0f213858-d248-406e-a618-29bea109ce7d",
+              "name": "nome da empresa do cliente",
+              "value": "={{ $json.body.email.data.nomeEmpresa }}",
+              "type": "string"
+            },
+            {
+              "id": "e617d3c9-8cb4-482d-9900-ac6de6edce59",
+              "name": "solucao da empresa",
+              "value": "={{ $json.body.email.data.solucaoEmpresa }}",
+              "type": "string"
+            },
+            {
+              "id": "bc617415-a65c-4033-8e0a-f44b449e2a69",
+              "name": "tom da ia",
+              "value": "={{ $json.body.email.data.tomIA }}",
+              "type": "string"
+            },
+            {
+              "id": "99798542-d524-4c45-81a0-d8f52eb7726d",
+              "name": "lista",
+              "value": "={{ $json.body.campaign.tableName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -816,
+        304
+      ],
+      "id": "e997db98-a636-4543-ba10-1e575c23b371",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "batchSize": 120,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "530e64e6-bfa5-4362-bf7a-9f512ad9750b",
+      "name": "Loop Over Items",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        368,
+        -48
+      ],
+      "id": "0d6d65ec-bf19-42df-96b3-78b15b7e0c49",
+      "name": "Loop Over Items1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "kauann@brandsp.com.br",
+        "toEmail": "={{ $('Edit Fields2').item.json.email }}",
+        "subject": "E se cada abordagem da sua prospecção fosse única?",
+        "emailFormat": "text",
+        "text": "=Olá {{ $('Edit Fields2').item.json.nome }}, tudo bem?\n\nGerar e abordar leads via e-mail e whatsapp de forma personalizada é um problema para toda empresa.\n\nE nossa automação resolve isso, geramos leads com e-mails e mensagens no Whatsapp tão personalizados que parecem escritos à mão.\n\nEla faz uma pesquisa de mercado e personaliza a abordagem, veja um exemplo de uma pesquisa simples que foi feita automatizada para sua empresa: \n\n{{ $json.output }}\n\nSe gerar e abordar leads de forma personalizada for uma dor para a sua operação comercial me responda por aqui e te envio o link da minha agenda para te ajudar com isso!\n\nAbraços,\n\nKauann Pires\nwww.brandsp.com.br\n(11) 98276-8054\nFundador | Especialista em automação | Inbound Marketing",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "35fb529a-b538-4044-ba7d-62281d7d99b4",
+      "name": "Send email",
+      "webhookId": "a4c0bfd6-02b9-47cf-a644-cd3772190251",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        224
+      ],
+      "id": "7cbbd443-116f-43eb-bbe8-7cd187682ea2",
+      "name": "OpenAI Chat Model",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\nNome da empresa: {{ $json.empresa }}",
+        "options": {
+          "systemMessage": "=Assuma o papel de um analista de inteligência de negócios focado em prospecção B2B.\n\nSeu objetivo é obter informações detalhadas e estratégicas sobre uma empresa específica para que eu possa criar um e-mail outbound altamente personalizado e relevante para um potencial cliente ou parceiro dentro dela.\n\nA empresa-alvo é: {{ $json.empresa }}\n\nPor favor, colete e apresente as seguintes informações sobre essa empresa:\n\n1.  **Modelo de Negócio e Principal Oferta:**  Quais são os principais produtos ou serviços que ela oferece? Como ela gera receita?\n2.  **Mercado e Indústria:** Em qual setor a empresa atua? Quais são as tendências atuais e os principais desafios enfrentados por esse setor (e pela empresa, se houver informações específicas)?\n3.  **Público-Alvo da Empresa:** Quem são os clientes da  empresa? Para quem eles vendem ou prestam serviço?\n4.  **Notícias e Eventos Recentes:** Houve algum anúncio importante, lançamento de produto, aquisição, rodada de investimento, mudança de liderança, reportagem relevante ou participação em grandes eventos nos últimos 6-12 meses? \n5.  **Tecnologias/Ferramentas Utilizadas (se relevante):** Se eu estou vendendo uma ferramenta ou serviço que se integra ou substitui algo, quais tecnologias a empresa parece usar? (Ex: CRM, ERP, ferramentas de marketing, etc. - se você souber o que procurar, pode ser mais específico aqui).\n6.  **Cultura e Valores (se aparente):** Há algo sobre a cultura da empresa ou seus valores que é publicamente conhecido e que pode ser usado para criar conexão? (Ex: foco em sustentabilidade, inovação, impacto social).\n\n\nnão responda em topicos ou numeros, respoonda tudo de uma vez de forma resumida e organizada e detalhada\n\nresponda em 100 caracteres no maximo, isso é uima regra"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "1a2fe883-30f8-4935-a32b-029c2a34bf89",
+      "name": "Pesquisa de mercado."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "={{ $json.lista }}",
+        "filterType": "none"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        304
+      ],
+      "id": "72f341b8-1a92-4cec-a2ea-6f3b66384469",
+      "name": "Get many rows",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "XPoVFaHjlQ94nXE5",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "829ec7a1-22ee-4a12-bcfd-cc23cab27b03",
+              "leftValue": "={{ $('Webhook').item.json.body.email.enabled }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "613d1e17-c99d-4bdd-8f64-a3846c970d3e",
+              "leftValue": "={{ $('Webhook').item.json.body.whatsapp.enabled }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        304
+      ],
+      "id": "cb43d226-7d0b-4767-b87d-fb30d9eb1672",
+      "name": "Tem whatsaapp também?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -96,
+        368
+      ],
+      "id": "a7d6f85d-9261-4da2-abd5-8d18ac06dc60",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "fromEmail": "kauann@brandsp.com.br",
+        "toEmail": "marketingkauann@gmail.com",
+        "subject": "={{ $('Assunto').item.json.output }}",
+        "emailFormat": "text",
+        "text": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1056,
+        496
+      ],
+      "id": "e1f74856-172f-4c2a-96a5-7e8cd3991e37",
+      "name": "Send email1",
+      "webhookId": "99e8b898-af41-48d8-aefe-2d8433070f2a",
+      "credentials": {
+        "smtp": {
+          "id": "0UCMKDra3TgWx3XJ",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "=define",
+        "text": "=\n{{ $json.output }}\n",
+        "options": {
+          "systemMessage": "=Nome do contato:{{ $('Get many rows').item.json.nome }}\nEmpresa: {{ $('Get many rows').item.json.empresa }}\n\nAssuma o papel de um copywriter sênior, especialista em e-mails de prospecção B2B.\n\nMeu nome: Kauann Pires Fundador da Brandsp\nVocê vai gerar o **CORPO de um e-mail de prospecção outbound** para uma empresa-alvo específica.\n\n**Contexto da Brandsp (sua empresa):**\nA Brandsp ajuda empresas a crescerem no marketing digital, unindo automação, IA e atendimento humanizado. Nossos serviços incluem: IA (SDRs de IA, automação de atendimento), Prospecção Ativa com IA, CRM com IA, Inbound Marketing, Gestão de Redes Sociais, Outbound Marketing e Tráfego Pago. Nosso diferencial é ir além da visibilidade, buscando conexões genuínas e engajamento real, aproveitando o potencial da IA sem perder o toque humano.\n\n**Empresa-Alvo:** \n\n**Instruções de Pesquisa (Passo Oculto da IA):**\n1.  Pesquise rapidamente a empresa} para identificar: seu core business, setor, público-alvo, e **os 1-2 principais desafios ou pontos de dor** que ela provavelmente enfrenta em relação a marketing digital, prospecção, vendas ou atendimento ao cliente. Também identifique **1-2 oportunidades de crescimento** que possam ser potencializadas com automação/IA.\n\n**Requisitos para o Corpo do E-mail:**\n* **Personalização:** Comece com uma saudação personalizada (e.g., \"Olá [Nome do Contato],\").\n* **Conexão Imediata:** Vincule o início do e-mail diretamente a um dos pontos de dor ou oportunidades da  identificados na pesquisa. Mostre que você entende o universo deles.\n* **Foco na Dor:** Destaque o problema que a empresa-alvo pode estar enfrentando (a dor).\n* **Proposta de Valor (Implícita Brandsp):** Apresente uma solução que a Brandsp oferece, sem citar explicitamente \"Brandsp\", mas sim o **benefício** que a nossa automação, IA e toque humano podem trazer. Use exemplos genéricos de como a Brandsp resolve problemas (escalar prospecção, otimizar atendimento, acelerar vendas).\n* **Linguagem:** Profissional, concisa, direta, empática e orientada para a solução.\n* **Chamada para Ação (CTA):** Clara e de baixo compromisso. Sugira uma breve conversa (15 minutos) para explorar como a solução pode ser aplicada ao contexto deles.\n* **Encerramento:** Profissional e aberto.\n* A saída final deve ser **APENAS o corpo do e-mail**, sem assunto, introdução, justificativa, ou texto adicional.\n\nQual o corpo do e-mail você sugere?"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        704,
+        496
+      ],
+      "id": "d7c8ddb9-e09a-433c-9a62-1ac903aa46c6",
+      "name": "Corpo do email"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=Assuma o papel de um copywriter sênior, especialista em e-mails de prospecção B2B.\n\nVocê vai gerar **APENAS 1 assunto de e-mail** para uma empresa-alvo específica.\n\n**Contexto da Brandsp (sua empresa):**\nA Brandsp ajuda empresas a crescerem no marketing digital, unindo automação, IA e atendimento humanizado. Nossos serviços incluem: IA (SDRs de IA, automação de atendimento), Prospecção Ativa com IA, CRM com IA, Inbound Marketing, Gestão de Redes Sociais, Outbound Marketing e Tráfego Pago. Nosso diferencial é ir além da visibilidade, buscando conexões genuínas e engajamento real, aproveitando o potencial da IA sem perder o toque humano.\n\n**Informações da Empresa-Alvo:**\n* **Nome da Empresa-Alvo:** {{ $('Tem whatsaapp também?').item.json.empresa }}\n\n\n**Requisitos para o Assunto:**\n* Deve ser **UM SÓ assunto**.\n* **Altamente personalizado** para a EMPRESA-ALVO, usando um dos pontos-chave fornecidos.\n* Conter uma **pergunta** que instigue sobre como a Brandsp pode ajudar.\n* Incluir **um emoji** relevante e profissional.\n* Ser **conciso** (idealmente entre 5 e 10 palavras).\n* Sugerir **valor** ou abordar uma possível **dor/oportunidade** da empresa-alvo, conectando diretamente com a expertise da Brandsp.\n* **Evitar termos de spam.**\n* A saída final deve ser **APENAS o assunto gerado**, sem nenhuma frase de introdução, justificativa, ou texto adicional.\n\nCite o nome da empresa no assunto e ao invés de colocar \"como\" seja criativo e lembre-se que você precisa instigar abertura do email, lembrando que você está oferecendo os serviços da brandsp, não precisa citar a brandsp \n\nNão use áspas.\n\nfoque na dor do lead\nQual assunto você sugere?"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        432,
+        496
+      ],
+      "id": "82cb4143-e74e-4db8-a872-7090e74c1522",
+      "name": "Assunto"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\nNome da empresa: {{ $('Get many rows').item.json.empresa }}",
+        "options": {
+          "systemMessage": "=Assuma o papel de um analista de inteligência de negócios focado em prospecção B2B.\n\nSeu objetivo é obter informações detalhadas e estratégicas sobre uma empresa específica para que eu possa criar um e-mail outbound altamente personalizado e relevante para um potencial cliente ou parceiro dentro dela.\n\nA empresa-alvo é: {{ $('Get many rows').item.json.empresa }}\n\nPor favor, colete e apresente as seguintes informações sobre essa empresa:\n\n1.  **Modelo de Negócio e Principal Oferta:**  Quais são os principais produtos ou serviços que ela oferece? Como ela gera receita?\n2.  **Mercado e Indústria:** Em qual setor a empresa atua? Quais são as tendências atuais e os principais desafios enfrentados por esse setor (e pela empresa, se houver informações específicas)?\n3.  **Público-Alvo da Empresa:** Quem são os clientes da empresa? Para quem eles vendem ou prestam serviço?\n4.  **Notícias e Eventos Recentes:** Houve algum anúncio importante, lançamento de produto, aquisição, rodada de investimento, mudança de liderança, reportagem relevante ou participação em grandes eventos nos últimos 6-12 meses? (Isso é crucial para \"ganchos\" no e-mail).\n5.  **Tecnologias/Ferramentas Utilizadas (se relevante):** Se eu estou vendendo uma ferramenta ou serviço que se integra ou substitui algo, quais tecnologias a empresa parece usar? (Ex: CRM, ERP, ferramentas de marketing, etc. - se você souber o que procurar, pode ser mais específico aqui).\n6.  **Cultura e Valores (se aparente):** Há algo sobre a cultura da empresa ou seus valores que é publicamente conhecido e que pode ser usado para criar conexão? (Ex: foco em sustentabilidade, inovação, impacto social).\n7.  **Pontos de Dor Potenciais/Oportunidades:** Com base nas informações acima, quais são os 2-3 problemas que a [NOME DA EMPRESA] provavelmente está enfrentando ou as 2-3 oportunidades que ela pode estar buscando aproveitar? (Pense em como sua oferta poderia se encaixar).\n\nOrganize as informações em tópicos claros, com destaque para os \"ganchos\" mais promissores (notícias recentes, pontos de dor). A resposta deve ser concisa e focada em dados acionáveis para personalização do e-mail.\n\nLimite 300 caracteres"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        128,
+        496
+      ],
+      "id": "7798f87b-9788-4cdb-bc9a-b6bd8778455f",
+      "name": "Pequisa de mercado"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        720
+      ],
+      "id": "b7f93756-f752-4ba0-850c-ba312bfac2c5",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "cK1pm1LkkFngLHMg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "campaign_leads_vitoria",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "empresa",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.empresa }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "enviou_email",
+              "fieldValue": "SIM"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        496
+      ],
+      "id": "a98a59fa-0639-413c-acdc-92d9e0961b1c",
+      "name": "Update a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "XPoVFaHjlQ94nXE5",
+          "name": "Supabase account"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Pesquisa de mercado.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Pesquisa de mercado.",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pesquisa de mercado.": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Tem whatsaapp também?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem whatsaapp também?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Pequisa de mercado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email1": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assunto": {
+      "main": [
+        [
+          {
+            "node": "Corpo do email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pequisa de mercado": {
+      "main": [
+        [
+          {
+            "node": "Assunto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Pequisa de mercado",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Assunto",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Corpo do email",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Corpo do email": {
+      "main": [
+        [
+          {
+            "node": "Send email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b2074f4a-d1e5-413f-87a9-a9e768a57751",
+  "meta": {
+    "instanceId": "857987448ada7fd34a0395675321758d0d3fb3add588e4d01e275ebfb295ca76"
+  },
+  "id": "3X76tE68Kfi5XgXZ",
+  "tags": []
+}
