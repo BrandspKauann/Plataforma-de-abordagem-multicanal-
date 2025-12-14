@@ -1,73 +1,78 @@
-# Visão Geral do Projeto
+# 🚀 Backend SaaS Multicanal com IA (n8n)
 
-Este workflow do **n8n** implementa o **backend de um SaaS de disparo de mensagens personalizadas multicanal (E-mail e WhatsApp)**, com foco em **prospecção B2B outbound altamente personalizada**, utilizando **IA generativa**, **Supabase como base de dados** e **gatilho via API (Webhook)**.
-
-O objetivo é permitir que aplicações externas (frontend, painel admin ou outro serviço) iniciem campanhas passando parâmetros de personalização, enquanto o n8n orquestra:
-
-* Leitura de leads
-* Pesquisa de mercado automatizada via IA
-* Geração de assunto e corpo de e-mails personalizados
-* Disparo de mensagens
-* Atualização de status da campanha
+> **Disparo inteligente de mensagens personalizadas (E-mail & WhatsApp)** usando automação, IA e banco de dados em tempo real.
 
 ---
 
-# Arquitetura Geral
+## 🧭 Visão Geral
 
-**Fluxo macro:**
+Este workflow do **n8n** implementa o **backend de um SaaS de outbound multicanal**, focado em **prospecção B2B altamente personalizada**.
 
-1. Aplicação externa envia requisição HTTP
-2. n8n recebe via Webhook
-3. Parâmetros da campanha são normalizados
-4. Leads são buscados no Supabase
-5. Para cada lead:
+Ele permite que qualquer aplicação externa (frontend, painel admin ou outro serviço) **inicie campanhas via API**, enquanto o n8n orquestra todo o processamento:
 
-   * Pesquisa de mercado com IA
-   * Geração de assunto
-   * Geração do corpo do e-mail
-   * Envio do e-mail
-   * Atualização do status no banco
+* 📥 Recebimento da campanha
+* 🧠 Pesquisa de mercado com IA
+* ✍️ Escrita automática de e-mails personalizados
+* 📤 Envio de mensagens
+* 📊 Atualização de status e métricas
 
 ---
 
-# Tecnologias Utilizadas
+## 🏗️ Arquitetura Geral
 
-## Orquestração
-
-* **n8n** – Automação e backend serverless
-
-## Banco de Dados
-
-* **Supabase** (PostgreSQL)
-
-  * Leitura de leads
-  * Atualização de status da campanha
-
-## Inteligência Artificial
-
-* **OpenAI (via LangChain no n8n)**
-
-  * Modelos utilizados:
-
-    * gpt-4.1-mini
-    * gpt-5-mini
-
-## Comunicação
-
-* **Webhook HTTP (REST)** – Entrada do SaaS
-* **SMTP** – Envio de e-mails
+```
+[ Frontend / App ]
+        |
+        v
+[ Webhook (API) ]
+        |
+        v
+[ Normalização de Dados ]
+        |
+        v
+[ Supabase (Leads) ]
+        |
+        v
+[ Loop de Leads ]
+        |
+        v
+[ IA: Pesquisa → Assunto → Corpo ]
+        |
+        v
+[ Envio de Mensagem ]
+        |
+        v
+[ Atualização de Status ]
+```
 
 ---
 
-# Entrada da API (Webhook)
+## 🧰 Tecnologias Utilizadas
 
-## Endpoint
+| Camada         | Tecnologia                | Função                         |
+| -------------- | ------------------------- | ------------------------------ |
+| Orquestração   | **n8n**                   | Backend serverless e automação |
+| Banco de Dados | **Supabase (PostgreSQL)** | Leads e status de campanha     |
+| IA             | **OpenAI (LangChain)**    | Pesquisa + Copywriting         |
+| Comunicação    | **Webhook REST**          | Entrada da campanha            |
+| Envio          | **SMTP**                  | Disparo de e-mails             |
+
+**Modelos de IA:**
+
+* gpt-4.1-mini
+* gpt-5-mini
+
+---
+
+## 🔌 API – Entrada do Sistema
+
+### Endpoint
 
 ```
 POST /webhook/plataforma
 ```
 
-## Estrutura esperada do JSON
+### Payload esperado
 
 ```json
 {
@@ -92,198 +97,182 @@ POST /webhook/plataforma
 
 ---
 
-# Normalização de Dados (Edit Fields)
+## 🧩 Normalização de Dados
 
-O node **Edit Fields** padroniza os dados recebidos e cria variáveis internas como:
+**Node:** `Edit Fields`
 
-* nome da campanha
-* canais ativos (email / whatsapp)
-* nome do usuário
-* empresa
-* solução
-* tom da IA
-* nome da tabela no Supabase
+Transforma o payload da API em variáveis internas padronizadas:
 
-Isso desacopla o frontend da lógica interna do workflow.
+* 🏷️ Nome da campanha
+* 📧 Canal e-mail ativo
+* 💬 Canal WhatsApp ativo
+* 👤 Nome do usuário
+* 🏢 Empresa
+* 🎯 Solução
+* 🧠 Tom da IA
+* 🗃️ Tabela de leads (Supabase)
 
----
-
-# Leitura de Leads (Supabase)
-
-Node: **Get many rows**
-
-* Operação: `getAll`
-* Tabela dinâmica (recebida via Webhook)
-* Retorna todos os leads da campanha
-
-Cada lead deve conter ao menos:
-
-* nome
-* empresa
-* email
+> Isso desacopla completamente o frontend da lógica interna do workflow.
 
 ---
 
-# Controle de Canal (IF)
+## 🗃️ Leitura de Leads (Supabase)
 
-Node: **Tem whatsapp também?**
+**Node:** `Get many rows`
 
-Responsável por decidir o fluxo:
+| Configuração | Valor              |
+| ------------ | ------------------ |
+| Operação     | getAll             |
+| Tabela       | Dinâmica (via API) |
 
-* Apenas e-mail
-* E-mail + WhatsApp (estrutura preparada)
+Cada lead deve conter:
 
-Atualmente o fluxo de WhatsApp está previsto, mas o disparo está focado em e-mail.
+* `nome`
+* `empresa`
+* `email`
 
 ---
 
-# Loop de Processamento de Leads
+## 🔀 Controle de Canal
 
-Node: **Split In Batches**
+**Node:** `Tem whatsapp também?`
 
-* Processa os leads em lotes
-* Evita sobrecarga de API e modelos de IA
+Decide o fluxo da campanha:
+
+* ✅ Apenas e-mail
+* 🔄 E-mail + WhatsApp (estrutura pronta)
+
+> O projeto já nasce **multicanal por design**.
+
+---
+
+## 🔁 Loop de Processamento
+
+**Node:** `Split In Batches`
+
+* Processa leads em lotes
+* Evita sobrecarga de API
 * Permite escalar campanhas grandes
 
 ---
 
-# Pesquisa de Mercado com IA
+## 🧠 Pesquisa de Mercado com IA
 
-Node: **Pesquisa de mercado / Pesquisa de mercado.**
+**Nodes:** `Pesquisa de mercado`
 
-## Objetivo
-
-Criar contexto real da empresa-alvo antes da escrita do e-mail.
-
-## A IA analisa:
+A IA analisa automaticamente:
 
 * Modelo de negócio
-* Setor
+* Setor e mercado
 * Público-alvo
 * Notícias recentes
-* Possíveis dores e oportunidades
+* Dores e oportunidades
 
-## Restrições
+📏 **Restrições:**
 
 * Resposta curta
-* Foco em dados acionáveis
+* Conteúdo acionável
 * Limite de caracteres
-
-Essa saída alimenta os próximos agentes de IA.
 
 ---
 
-# Geração do Assunto do E-mail
+## 📨 Geração do Assunto
 
-Node: **Assunto**
+**Node:** `Assunto`
 
-## Regras principais
+Regras:
 
-* Apenas 1 assunto
+* 1 único assunto
 * Personalizado com nome da empresa
 * Linguagem B2B
 * Emoji profissional
 * Foco em dor ou oportunidade
-* Evita palavras de spam
 
 ---
 
-# Geração do Corpo do E-mail
+## ✍️ Geração do Corpo do E-mail
 
-Node: **Corpo do email**
+**Node:** `Corpo do email`
 
-## Estratégia
-
-A IA assume o papel de **copywriter sênior de outbound B2B**, gerando:
+A IA atua como **copywriter sênior de outbound B2B**, gerando:
 
 * Saudação personalizada
-* Conexão com a dor do lead
+* Conexão direta com a dor
 * Proposta de valor implícita
-* CTA de baixo atrito (15 minutos)
+* CTA de baixo atrito (15 min)
 
-A saída é **somente o corpo do e-mail**, pronto para envio.
+📤 Saída: **somente o corpo do e-mail**
 
 ---
 
-# Envio de E-mail
+## 📤 Envio de Mensagens
 
-Node: **Send email1**
+**Node:** `Send email`
 
 * SMTP configurado
-* Assunto gerado pela IA
-* Corpo totalmente personalizado
+* Assunto e corpo gerados por IA
+* Pronto para escala
 
 ---
 
-# Atualização de Status da Campanha
+## 📊 Atualização de Status
 
-Node: **Update a row (Supabase)**
+**Node:** `Update a row`
 
 Após o envio:
 
-* Campo `enviou_email = SIM`
-* Evita reenvio duplicado
-* Permite métricas e relatórios
+* `enviou_email = SIM`
+* Evita duplicidade
+* Base para métricas
 
 ---
 
-# Cálculos e Formulação do Problema
+## 📐 Formulação do Problema
 
-## Objetivo
+### 🎯 Objetivo
 
-Maximizar **taxa de resposta em outbound B2B** mantendo escala e personalização.
+Maximizar taxa de resposta em outbound B2B mantendo escala e personalização.
 
----
-
-## Variáveis
+### 🔢 Variáveis
 
 * **N** = número de leads
 * **B** = tamanho do batch
 * **Cᵢ** = custo por chamada de IA
 * **Tᵢ** = tempo médio por lead
 
----
+### ⏱️ Complexidade
 
-## Complexidade
+* Temporal: **O(N)**
 
-* Complexidade temporal: **O(N)**
-* Cada lead é processado uma única vez
-
----
-
-## Custo estimado por campanha
+### 💰 Custo estimado
 
 ```
-Custo total ≈ N × (C_pesquisa + C_assunto + C_corpo)
+Custo ≈ N × (C_pesquisa + C_assunto + C_corpo)
 ```
-
-Onde:
-
-* Cada termo representa uma chamada de modelo de linguagem
 
 ---
 
-# Pontos Fortes da Arquitetura
+## 🌟 Pontos Fortes
 
 * Backend serverless
-* Totalmente orientado a eventos
+* Arquitetura orientada a eventos
 * Fácil integração com qualquer frontend
-* IA desacoplada da aplicação
+* IA desacoplada
 * Escalável por batch
-* Multicanal por design
+* Multicanal nativo
 
 ---
 
-# Próximas Evoluções Sugeridas
+## 🛣️ Próximas Evoluções
 
-* Implementar disparo WhatsApp (Z-API, Twilio, Gupshup)
-* Rate limit por domínio
+* WhatsApp (Z-API, Twilio, Gupshup)
 * A/B testing de assuntos
-* Webhook de callback (status)
+* Rate limit inteligente
+* Webhook de callback
 * Dashboard de métricas
 
 ---
 
-# Conclusão
+## ✅ Conclusão
 
-Este workflow transforma o n8n em um **backend completo de SaaS de outbound com IA**, capaz de competir com plataformas enterprise, mantendo flexibilidade, baixo custo e alto nível de personalização.
+Este workflow transforma o **n8n em um backend completo de SaaS de outbound com IA**, combinando **escala, personalização e baixo custo**, pronto para produção e crescimento.
